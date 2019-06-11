@@ -35,14 +35,14 @@ class KalmanFilterLocalizer(object):
         pygame.draw.circle(screen, (0, 255, 0), (self.state[0], self.state[1]), self.radius)
         w, h, angle = self.cov_ellipse(self.cov[:2, :2], 0.95)
         w = max(w, 1.)
-        h = max(w, 1.)
+        h = max(h, 1.)
+        #print('w = {}, h = {}'.format(w, h))
         surface = pygame.Surface((w, h), pygame.SRCALPHA, 32).convert_alpha()
         pygame.draw.ellipse(surface, (0, 255, 0, 100), (0, 0, w, h))
         rot_surface = pygame.transform.rotate(surface, angle)
         rcx, rcy = rot_surface.get_rect().center
         pos = (self.state[0, 0] - rcx, self.state[1, 0] - rcy)
         screen.blit(rot_surface, pos)
-
 
     @staticmethod
     def cov_ellipse(cov, q):
@@ -56,7 +56,7 @@ class KalmanFilterLocalizer(object):
         """
         q = np.asarray(q)
         r2 = chi2.ppf(q, 2)
-        print('r2 = ', r2)
+        #print('r2 = ', r2)
         val, vec = np.linalg.eigh(cov)
         width, height = 2 * np.sqrt(val[:, None] ** 2 * r2)
         rotation = np.degrees(np.arctan2(*vec[::-1, 0]))
@@ -71,10 +71,11 @@ class KalmanFilterLocalizer(object):
                       [0., 0.5 * dt ** 2],
                       [dt, 0.],
                       [0., dt]])
-        Q = np.array([[1., 1., 1., 1.],
-                      [1., 1., 1., 1.],
-                      [0., 0., 20., 0.],
-                      [0., 0., 0., 20.]])
+        Q = np.zeros((4,4))
+        Q = np.array([[5., 0., 5., 0.],
+                      [0., 5., 0., 5.],
+                      [5., 0., 20., 0.],
+                      [0., 5., 0., 20.]])
         # predict:
         x = F.dot(self.state) + B.dot(self.accel)
         P = F.dot(self.cov).dot(F.T) + Q
@@ -91,12 +92,14 @@ class KalmanFilterLocalizer(object):
 
         self.state = x + K.dot(y)
         self.cov = (np.eye(4) - K.dot(H)).dot(P)
+        print(self.cov)
+        print()
 
-        print('kf z:', z)
-        print('kf R:', R)
-        print('kf state: ', self.state)
-        print('kf cov', self.cov)
-        print('kf gain:', K)
+        # print('kf z:', z)
+        # print('kf R:', R)
+        # print('kf state: ', self.state)
+        # print('kf cov', self.cov)
+        # print('kf gain:', K)
 
         self.accel = np.array([0., 0.]).reshape(-1, 1)
 

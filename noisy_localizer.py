@@ -20,13 +20,13 @@ class NoisyLocalizer(object):
 
     def update(self):
         self.location = np.random.normal(self.robot.state[:2], self.sigma)
-        print('noisy loc:', self.location)
+        #print('noisy loc:', self.location)
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, self.location, self.radius)
         w, h, angle = self.cov_ellipse(np.eye(2) * self.sigma, 0.95)
         w = max(w, 1.)
-        h = max(w, 1.)
+        h = max(h, 1.)
         surface = pygame.Surface((w, h), pygame.SRCALPHA, 32).convert_alpha()
         pygame.draw.ellipse(surface, (255, 255, 0, 100), (0, 0, w, h))
         rot_surface = pygame.transform.rotate(surface, angle)
@@ -46,7 +46,7 @@ class NoisyLocalizer(object):
         """
         q = np.asarray(q)
         r2 = chi2.ppf(q, 2)
-        print('r2 = ', r2)
+        #print('r2 = ', r2)
         val, vec = np.linalg.eigh(cov)
         width, height = 2 * np.sqrt(val[:, None] ** 2 * r2)
         rotation = np.degrees(np.arctan2(*vec[::-1, 0]))
